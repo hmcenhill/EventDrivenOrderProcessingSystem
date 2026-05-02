@@ -3,7 +3,7 @@
     <Project Path="src/OrderProcessing.Api/OrderProcessing.Api.csproj" />
     <Project Path="src/OrderProcessing.Application/OrderProcessing.Application.csproj" />
     <Project Path="src/OrderProcessing.Domain/OrderProcessing.Domain.csproj" />
-    <Project Path="src/OrderProcessing.Infra/OrderProcessing.Infra.csproj" />
+    <Project Path="src/OrderProcessing.Infrastructure/OrderProcessing.Infrastructure.csproj" />
     <Project Path="src/OrderProcessing.Workers/OrderProcessing.Workers.csproj" />
   </Folder>
   <Folder Name="/tests/">

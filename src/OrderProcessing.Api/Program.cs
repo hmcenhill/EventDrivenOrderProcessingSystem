@@ -1,21 +1,25 @@
+using Microsoft.EntityFrameworkCore;
+
 using OrderProcessing.Api.Configuraion;
+using OrderProcessing.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuration
-builder.Services.Configure<RabbitMqConfiguration>(
-    builder.Configuration.GetSection(nameof(RabbitMqConfiguration)));
-builder.Services.Configure<RedisConfiguration>(
-    builder.Configuration.GetSection(nameof(RedisConfiguration)));
+builder.Services.Configure<RabbitMqConfiguration>(builder.Configuration.GetSection(nameof(RabbitMqConfiguration)));
+builder.Services.Configure<RedisConfiguration>(builder.Configuration.GetSection(nameof(RedisConfiguration)));
 
-
-// Services
+builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHealthChecks();
 
-var app = builder.Build();
+var connectionString = builder.Configuration.GetConnectionString("WorkOrderProcessingDatabase")
+    ?? throw new InvalidOperationException("Connection string 'WorkOrderProcessingDatabase' was not found.");
 
+builder.Services.AddDbContext<WorkOrderProcessingDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
@@ -25,6 +29,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.MapControllers();
 app.MapHealthChecks("/health");
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
