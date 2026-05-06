@@ -21,6 +21,7 @@ If necessary `docker compose down -v` will stop all containers and delete volume
 connect to postgresql db:
 
 `docker exec -it orderprocessing-postgres psql -U postgres -d orderprocessing`
+check volumes with `\dt`
 
 ### Development details. Included for enrichment and reference.
 

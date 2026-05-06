@@ -2,12 +2,25 @@ namespace OrderProcessing.Domain.Models;
 
 public class WorkOrderStateHistory
 {
-    public Guid Id { get; set; }
-    public Guid WorkOrderId { get; set; }
-    public required WorkOrderStatus Status { get; set; }
-    public DateTime ChangedUtc { get; set; } = DateTime.UtcNow;
-    public string? Notes { get; set; }
-    public required string CompletedBy { get; set; }
+    public Guid Id { get; }
+    public Guid WorkOrderId { get; }
+    public WorkOrderStatus Status { get; }
+    public DateTime ChangedUtc { get; }
+    public string? Notes { get; }
+    public string CompletedBy { get; }
 
-    public required WorkOrder WorkOrder { get; set; }
+    public WorkOrder WorkOrder { get; }
+
+    private WorkOrderStateHistory() { }
+
+    public WorkOrderStateHistory(WorkOrder workOrder, string completedBy, string? notes)
+    {
+        Id = Guid.NewGuid();
+        WorkOrderId = workOrder.Id;
+        Status = workOrder.CurrentStatus;
+        ChangedUtc = DateTime.UtcNow;
+        Notes = notes;
+        CompletedBy = completedBy;
+        WorkOrder = workOrder;
+    }
 }

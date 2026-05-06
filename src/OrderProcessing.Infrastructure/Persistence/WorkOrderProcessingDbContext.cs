@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using OrderProcessing.Domain.Models;
+using OrderProcessing.Domain.Models.Materials;
 
 namespace OrderProcessing.Infrastructure.Persistence;
 
@@ -13,6 +14,8 @@ public class WorkOrderProcessingDbContext : DbContext
 
     public DbSet<WorkOrder> WorkOrders => Set<WorkOrder>();
     public DbSet<WorkOrderStateHistory> OrderStateHistory => Set<WorkOrderStateHistory>();
+    public DbSet<StockKeepingUnit> StockKeepingUnits => Set<StockKeepingUnit>();
+    public DbSet<Product> Products => Set<Product>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,13 +27,12 @@ public class WorkOrderProcessingDbContext : DbContext
 
             entity.HasKey(x => x.Id);
 
-            entity.Property(x => x.ExternalReference)
-                .HasMaxLength(100)
-                .IsRequired();
-
             entity.Property(x => x.CurrentStatus)
                 .HasConversion<string>()
                 .IsRequired();
+
+            entity.Property(x => x.PreviousStatus)
+                .HasConversion<string>();
 
             entity.Property(x => x.CreatedUtc)
                 .IsRequired();
@@ -38,8 +40,19 @@ public class WorkOrderProcessingDbContext : DbContext
             entity.Property(x => x.UpdatedUtc)
                 .IsRequired();
 
-            entity.HasIndex(x => x.ExternalReference)
-                .IsUnique();
+            entity.Property<string>("ordered_item_id");
+
+            entity.HasOne(x => x.OrderedItem)
+                .WithMany()
+                .HasForeignKey("ordered_item_id")
+                .IsRequired();
+
+            entity.Property(x => x.OrderItemQty)
+                .IsRequired();
+
+            entity.HasMany(x => x.AssignedStock)
+                .WithMany()
+                .UsingEntity("work_order_skus");
         });
 
         modelBuilder.Entity<WorkOrderStateHistory>(entity =>
@@ -64,6 +77,30 @@ public class WorkOrderProcessingDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
 
             entity.HasIndex(x => new { x.WorkOrderId, x.ChangedUtc });
+        });
+
+        modelBuilder.Entity<Product>(entity =>
+        {
+            entity.ToTable("products");
+
+            entity.HasKey(x => x.ItemId);
+
+            entity.Property(x => x.ItemName)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<StockKeepingUnit>(entity =>
+        {
+            entity.ToTable("skus");
+
+            entity.HasKey(x => x.SerialNumber);
+
+            entity.Property<string>("product_item_id");
+
+            entity.HasOne(x => x.Product)
+                .WithMany()
+                .HasForeignKey("product_item_id")
+                .IsRequired();
         });
     }
 }
